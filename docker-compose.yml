@@ -1,0 +1,20 @@
+version: "3"
+services:
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb-data:/data/db
+      - ./local/mongodb/mongodb-conf:/etc/mongo
+      - ./local/mongodb/mongodb-init:/docker-entrypoint-initdb.d/
+    command:
+      - "--config"
+      - "/etc/mongo/mongod.conf"
+      - "--wiredTigerCacheSizeGB"
+      - "0.5"
+
+volumes:
+  mongodb-data:
