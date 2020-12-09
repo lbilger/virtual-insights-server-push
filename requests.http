@@ -1,0 +1,31 @@
+GET localhost:8080/todo
+
+###
+
+GET localhost:8080/todo
+Accept: text/event-stream
+
+###
+
+POST localhost:8080/todo
+Content-Type: application/json
+
+{
+  "text": "Prepare Virtual Insights session",
+  "assignee": "Lars"
+}
+
+###
+
+PUT localhost:8080/todo/b48ef84f-a80c-4aad-a3b6-ae48f7aee5e2
+Content-Type: application/json
+
+{
+  "text": "Prepare Virtual Insights session",
+  "assignee": "Lars",
+  "completed": true
+}
+
+###
+
+DELETE localhost:8080/todo/b48ef84f-a80c-4aad-a3b6-ae48f7aee5e2
