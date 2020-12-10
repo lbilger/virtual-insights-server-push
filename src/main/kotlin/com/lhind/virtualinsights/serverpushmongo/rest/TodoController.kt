@@ -1,5 +1,7 @@
 package com.lhind.virtualinsights.serverpushmongo.rest
 
+import com.lhind.virtualinsights.serverpushmongo.repository.Todo
+import com.lhind.virtualinsights.serverpushmongo.repository.TodoRepository
 import org.springframework.http.HttpStatus.NO_CONTENT
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -11,9 +13,7 @@ import java.util.UUID.randomUUID
 
 @RestController
 @RequestMapping("todo")
-class TodoController {
-    val todos: MutableList<Todo> = mutableListOf()
-
+class TodoController(private val repository: TodoRepository) {
     val emitters: MutableList<FluxSink<Todo>> = mutableListOf()
 
     val changeFlux = Flux.create<Todo> { emitter ->
@@ -25,42 +25,37 @@ class TodoController {
     fun createTodo(@RequestBody eventualTodo: Mono<Todo>): Mono<Todo> {
         return eventualTodo
             .map { it.copy(id = randomUUID()) }
-            .doOnNext { todo ->
-                todos += todo
-                emitters.forEach { it.next(todo) }
-            }
+            .flatMap { repository.save(it) }
+            .doOnNext { todo -> emitters.forEach { it.next(todo) } }
     }
 
     @GetMapping(produces = ["application/json"])
     fun findAllTodos(): Flux<Todo> {
-        return Flux.fromIterable(todos)
+        return repository.findAll()
     }
 
     @GetMapping(produces = ["text/event-stream"])
     fun findAllTodosStream(): Flux<Todo> {
-        return Flux.fromIterable(todos).concatWith(changeFlux)
+        return findAllTodos().concatWith(changeFlux)
     }
 
     @PutMapping("{id}")
     fun updateTodo(@PathVariable("id") id: UUID, @RequestBody eventualTodo: Mono<Todo>): Mono<ResponseEntity<Todo>> {
-        val existingTodo = todos.find { it.id == id } ?: return Mono.just(ResponseEntity.notFound().build())
-        return eventualTodo
+        return repository.findById(id)
+            .flatMap { eventualTodo }
             .map { it.copy(id = id) }
-            .map { todo ->
-                todos -= existingTodo
-                todos += todo
-                emitters.forEach { it.next(todo) }
-                ResponseEntity.ok(todo)
-            }
+            .flatMap { repository.save(it) }
+            .doOnNext { todo -> emitters.forEach { it.next(todo) } }
+            .map { ResponseEntity.ok(it) }
+            .defaultIfEmpty(ResponseEntity.notFound().build())
     }
 
     @DeleteMapping("{id}")
     fun deleteTodo(@PathVariable("id") id: UUID): Mono<ResponseEntity<Void>> {
-        val existingTodo = todos.find { it.id == id } ?: return Mono.just(ResponseEntity.notFound().build())
-        todos -= existingTodo
-        emitters.forEach { it.next(existingTodo.copy(deleted = true)) }
-        return Mono.just(ResponseEntity.status(NO_CONTENT).build())
+        return repository.findById(id)
+            .flatMap { repository.delete(it).thenReturn(it) }
+            .doOnNext { todo -> emitters.forEach { it.next(todo.copy(deleted = true)) } }
+            .map { ResponseEntity.status(NO_CONTENT).build<Void>() }
+            .defaultIfEmpty(ResponseEntity.notFound().build())
     }
 }
-
-data class Todo(val id: UUID = randomUUID(), val text: String, val assignee: String, val completed: Boolean = false, val deleted: Boolean = false)
