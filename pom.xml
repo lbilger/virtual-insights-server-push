@@ -17,6 +17,7 @@
 	<properties>
 		<java.version>11</java.version>
 		<kotlin.version>1.4.10</kotlin.version>
+		<kotling-logging.version>2.0.3</kotling-logging.version>
 	</properties>
 
 	<dependencies>
@@ -51,6 +52,11 @@
 		<dependency>
 			<groupId>org.jetbrains.kotlinx</groupId>
 			<artifactId>kotlinx-coroutines-reactor</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.microutils</groupId>
+			<artifactId>kotlin-logging-jvm</artifactId>
+			<version>${kotling-logging.version}</version>
 		</dependency>
 
 		<dependency>

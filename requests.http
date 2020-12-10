@@ -1,5 +1,12 @@
 GET localhost:8080/todo
 
+> {%
+if(response.body.length > 0) {
+  client.assert(response.body[0].id, "Id shouldn't be null");
+  client.global.set("todoId", response.body[0].id);
+}
+ %}
+
 ###
 
 GET localhost:8080/todo
@@ -15,9 +22,14 @@ Content-Type: application/json
   "assignee": "Lars"
 }
 
+> {%
+client.assert(response.body.id, "Id shouldn't be null");
+client.global.set("todoId", response.body.id);
+%}
+
 ###
 
-PUT localhost:8080/todo/b48ef84f-a80c-4aad-a3b6-ae48f7aee5e2
+PUT localhost:8080/todo/{{todoId}}
 Content-Type: application/json
 
 {
@@ -28,4 +40,4 @@ Content-Type: application/json
 
 ###
 
-DELETE localhost:8080/todo/b48ef84f-a80c-4aad-a3b6-ae48f7aee5e2
+DELETE localhost:8080/todo/{{todoId}}
