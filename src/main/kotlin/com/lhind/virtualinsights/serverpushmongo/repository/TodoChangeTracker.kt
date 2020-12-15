@@ -49,12 +49,12 @@ class TodoChangeTracker(
 
     // Truly delete documents that have been marked deleted
     val trulyDeleteChangeStreamSubscription = changeStream
-    .filter { it.deleted }
-    .concatMap { todo ->
-        todoRepository.deleteById(todo.id)
-            .doOnSuccess { logger.trace { "Deleted todo ${todo.id} from database." } }
-    }
-    .subscribe()
+        .filter { it.deleted }
+        .concatMap { todo ->
+            todoRepository.deleteById(todo.id)
+                .doOnSuccess { logger.trace { "Deleted todo ${todo.id} from database." } }
+        }
+        .subscribe()
 
     @PreDestroy
     fun clearSubscription() {

@@ -12,7 +12,8 @@ import java.util.*
 import java.util.UUID.randomUUID
 
 @RestController
-@RequestMapping("todo")
+@RequestMapping("todos")
+@CrossOrigin
 class TodoController(private val repository: TodoRepository, private val todoChangeTracker: TodoChangeTracker) {
     @PostMapping
     fun createTodo(@RequestBody eventualTodo: Mono<Todo>): Mono<Todo> {

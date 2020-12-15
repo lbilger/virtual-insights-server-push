@@ -1,4 +1,4 @@
-GET localhost:8080/todo
+GET localhost:8080/todos
 
 > {%
 if(response.body.length > 0) {
@@ -9,12 +9,12 @@ if(response.body.length > 0) {
 
 ###
 
-GET localhost:8080/todo
+GET localhost:8080/todos
 Accept: text/event-stream
 
 ###
 
-POST localhost:8080/todo
+POST localhost:8080/todos
 Content-Type: application/json
 
 {
@@ -29,7 +29,19 @@ client.global.set("todoId", response.body.id);
 
 ###
 
-PUT localhost:8080/todo/{{todoId}}
+POST localhost:8080/todos
+Content-Type: application/json
+
+{"assignee":"","text":"","completed":false,"deleted":false}
+
+> {%
+client.assert(response.body.id, "Id shouldn't be null");
+client.global.set("todoId", response.body.id);
+%}
+
+###
+
+PUT localhost:8080/todos/{{todoId}}
 Content-Type: application/json
 
 {
@@ -40,4 +52,4 @@ Content-Type: application/json
 
 ###
 
-DELETE localhost:8080/todo/{{todoId}}
+DELETE localhost:8080/todos/{{todoId}}
